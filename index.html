@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>채용공고 트래커</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; }
+
+    .header { background: #1e293b; color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { font-size: 17px; font-weight: 700; }
+    .header-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+    .stats { display: flex; gap: 8px; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .stats::-webkit-scrollbar { display: none; }
+    .stat-card { background: white; border-radius: 10px; padding: 10px 14px; min-width: 70px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); flex-shrink: 0; }
+    .stat-card .num { font-size: 22px; font-weight: 700; line-height: 1; }
+    .stat-card .lbl { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .c-blue { color: #3b82f6; }
+    .c-amber { color: #f59e0b; }
+    .c-purple { color: #8b5cf6; }
+    .c-orange { color: #f97316; }
+    .c-green { color: #10b981; }
+    .c-gray { color: #94a3b8; }
+
+    .filters { padding: 0 16px 12px; display: flex; gap: 7px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .filters::-webkit-scrollbar { display: none; }
+    .filter-btn { border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; background: white; color: #64748b; flex-shrink: 0; transition: all 0.15s; }
+    .filter-btn.active { background: #1e293b; color: white; border-color: #1e293b; }
+
+    .jobs { padding: 0 16px 80px; display: flex; flex-direction: column; gap: 10px; max-width: 700px; margin: 0 auto; }
+
+    .job-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); border-left: 4px solid #e2e8f0; }
+    .job-card.new        { border-left-color: #3b82f6; }
+    .job-card.interested { border-left-color: #f59e0b; }
+    .job-card.applied    { border-left-color: #8b5cf6; }
+    .job-card.docs_passed{ border-left-color: #06b6d4; }
+    .job-card.interview  { border-left-color: #f97316; }
+    .job-card.final_pass { border-left-color: #10b981; }
+    .job-card.final_fail { border-left-color: #ef4444; }
+    .job-card.ignored    { border-left-color: #cbd5e1; opacity: 0.55; }
+
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 8px; }
+    .company { font-size: 12px; color: #64748b; font-weight: 500; }
+    .badges { display: flex; gap: 5px; flex-shrink: 0; }
+    .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+    .badge-source { background: #f1f5f9; color: #64748b; }
+    .badge-keyword { background: #eff6ff; color: #3b82f6; }
+
+    .job-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+
+    .details { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 12px; color: #64748b; margin-bottom: 12px; }
+
+    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .status-select { flex: 1; min-width: 110px; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 8px; font-size: 12px; background: #f8fafc; cursor: pointer; color: #1e293b; }
+    .status-select:focus { outline: none; border-color: #3b82f6; }
+    .link-btn { padding: 7px 14px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: none; white-space: nowrap; display: inline-block; }
+    .link-btn:hover { background: #2563eb; }
+
+    .memo-wrap { margin-top: 10px; }
+    .memo-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 12px; resize: none; height: 58px; font-family: inherit; color: #1e293b; background: #f8fafc; }
+    .memo-input:focus { outline: none; border-color: #3b82f6; background: white; }
+    .memo-input::placeholder { color: #cbd5e1; }
+
+    .empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
+    .empty .icon { font-size: 36px; margin-bottom: 12px; }
+    .empty p { font-size: 14px; }
+
+    @media (min-width: 640px) {
+      .stats { justify-content: center; }
+      .filters { max-width: 700px; margin: 0 auto; padding-left: 20px; padding-right: 20px; }
+      .jobs { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-sub">공고를 클릭해서 상태를 관리하세요</div>
+    <h1>채용공고 트래커</h1>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat-card"><div class="num c-blue" id="s-total">-</div><div class="lbl">전체</div></div>
+  <div class="stat-card"><div class="num c-blue" id="s-new">-</div><div class="lbl">새 공고</div></div>
+  <div class="stat-card"><div class="num c-amber" id="s-interested">-</div><div class="lbl">관심</div></div>
+  <div class="stat-card"><div class="num c-purple" id="s-applied">-</div><div class="lbl">지원함</div></div>
+  <div class="stat-card"><div class="num c-orange" id="s-interview">-</div><div class="lbl">면접중</div></div>
+  <div class="stat-card"><div class="num c-green" id="s-pass">-</div><div class="lbl">최종합격</div></div>
+</div>
+
+<div class="filters" id="filters">
+  <button class="filter-btn active" data-filter="all">전체</button>
+  <button class="filter-btn" data-filter="new">새 공고</button>
+  <button class="filter-btn" data-filter="interested">관심</button>
+  <button class="filter-btn" data-filter="applied">지원함</button>
+  <button class="filter-btn" data-filter="docs_passed">서류합격</button>
+  <button class="filter-btn" data-filter="interview">면접</button>
+  <button class="filter-btn" data-filter="final_pass">최종합격</button>
+  <button class="filter-btn" data-filter="final_fail">불합격</button>
+  <button class="filter-btn" data-filter="ignored">무시</button>
+</div>
+
+<div class="jobs" id="jobs-container">
+  <div class="empty"><div class="icon">⏳</div><p>데이터 불러오는 중...</p></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, doc, updateDoc, query, orderBy }
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // ⚠️ 아래 6개 값을 본인의 Firebase 설정으로 교체하세요
+  const firebaseConfig = {
+    apiKey:            "AIzaSyB9YHXv0sgw5mZzpB0607Vo-dKa3cWlZaw",
+    authDomain:        "job-tracker-1ceda.firebaseapp.com",
+    projectId:         "job-tracker-1ceda",
+    storageBucket:     "job-tracker-1ceda.firebasestorage.app",
+    messagingSenderId: "290821379158",
+    appId:             "1:290821379158:web:949393595306beda0b97f7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  const STATUS_LABEL = {
+    new:         "새 공고",
+    interested:  "관심",
+    ignored:     "무시",
+    applied:     "지원함",
+    docs_passed: "서류합격",
+    interview:   "면접",
+    final_pass:  "최종합격",
+    final_fail:  "불합격",
+  };
+
+  const SOURCE_LABEL = { wanted: "원티드", jobkorea: "잡코리아" };
+
+  let allJobs = [];
+  let currentFilter = "all";
+  const memoTimers = {};
+
+  // Firestore 실시간 연동
+  const q = query(collection(db, "jobs"), orderBy("crawled_at", "desc"));
+  onSnapshot(q, (snapshot) => {
+    allJobs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+  }, (err) => {
+    document.getElementById("jobs-container").innerHTML =
+      `<div class="empty"><div class="icon">⚠️</div><p>연결 오류: Firebase 설정을 확인해주세요.<br><small>${err.message}</small></p></div>`;
+  });
+
+  // 상태 변경
+  async function updateStatus(jobId, value) {
+    await updateDoc(doc(db, "jobs", jobId), { status: value });
+  }
+
+  // 메모 자동 저장 (타이핑 멈춘 후 0.8초)
+  function scheduleMemoSave(jobId, value) {
+    clearTimeout(memoTimers[jobId]);
+    memoTimers[jobId] = setTimeout(() => {
+      updateDoc(doc(db, "jobs", jobId), { memo: value });
+    }, 800);
+  }
+
+  // 필터 버튼
+  document.getElementById("filters").addEventListener("click", (e) => {
+    const btn = e.target.closest(".filter-btn");
+    if (!btn) return;
+    currentFilter = btn.dataset.filter;
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    render();
+  });
+
+  function render() {
+    // 메모 현재값 보존 (리렌더 시 사용자가 입력 중인 내용 유지)
+    const liveMemos = {};
+    document.querySelectorAll(".memo-input[data-job-id]").forEach(el => {
+      liveMemos[el.dataset.jobId] = el.value;
+    });
+
+    // 통계 업데이트
+    document.getElementById("s-total").textContent     = allJobs.filter(j => j.status !== "ignored").length;
+    document.getElementById("s-new").textContent       = allJobs.filter(j => j.status === "new").length;
+    document.getElementById("s-interested").textContent= allJobs.filter(j => j.status === "interested").length;
+    document.getElementById("s-applied").textContent   = allJobs.filter(j => j.status === "applied").length;
+    document.getElementById("s-interview").textContent = allJobs.filter(j => j.status === "interview").length;
+    document.getElementById("s-pass").textContent      = allJobs.filter(j => j.status === "final_pass").length;
+
+    // 필터링
+    const filtered = currentFilter === "all"
+      ? allJobs.filter(j => j.status !== "ignored")
+      : allJobs.filter(j => j.status === currentFilter);
+
+    const container = document.getElementById("jobs-container");
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty"><div class="icon">📭</div><p>공고가 없어요</p></div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(job => {
+      const status   = job.status || "new";
+      const deadline = (job.deadline && job.deadline !== "상시채용") ? `⏰ ${esc(job.deadline)}` : "⏰ 상시채용";
+      const memoVal  = liveMemos[job.id] !== undefined ? liveMemos[job.id] : (job.memo || "");
+
+      const options = Object.entries(STATUS_LABEL)
+        .map(([v, l]) => `<option value="${v}"${status === v ? " selected" : ""}>${l}</option>`)
+        .join("");
+
+      return `
+        <div class="job-card ${esc(status)}">
+          <div class="card-top">
+            <span class="company">${esc(job.company || "")}</span>
+            <div class="badges">
+              <span class="badge badge-source">${esc(SOURCE_LABEL[job.source] || job.source)}</span>
+              ${job.keyword ? `<span class="badge badge-keyword">${esc(job.keyword)}</span>` : ""}
+            </div>
+          </div>
+          <div class="job-title">${esc(job.title || "")}</div>
+          <div class="details">
+            ${job.location  ? `<span>📍 ${esc(job.location)}</span>`  : ""}
+            ${job.experience? `<span>💼 ${esc(job.experience)}</span>`: ""}
+            <span>${deadline}</span>
+          </div>
+          <div class="actions">
+            <select class="status-select" data-job-id="${esc(job.id)}"
+              onchange="document.dispatchEvent(new CustomEvent('status-change',{detail:{id:'${esc(job.id)}',val:this.value}}))">
+              ${options}
+            </select>
+            ${job.link ? `<a href="${esc(job.link)}" target="_blank" rel="noopener" class="link-btn">공고 보기 →</a>` : ""}
+          </div>
+          <div class="memo-wrap">
+            <textarea class="memo-input" data-job-id="${esc(job.id)}" placeholder="메모..."
+              oninput="document.dispatchEvent(new CustomEvent('memo-input',{detail:{id:'${esc(job.id)}',val:this.value}}))"
+            >${esc(memoVal)}</textarea>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  document.addEventListener("status-change", e => updateStatus(e.detail.id, e.detail.val));
+  document.addEventListener("memo-input",    e => scheduleMemoSave(e.detail.id, e.detail.val));
+
+  function esc(s) {
+    return String(s ?? "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+</script>
+</body>
+</html>
