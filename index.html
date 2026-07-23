@@ -103,6 +103,72 @@
     .na-text::placeholder { color: #cbd5e1; }
     .na-wrap.due .na-text, .na-wrap.due .na-date { border-color: #fca5a5; background: #fef2f2; }
 
+    /* ── 상세 영역 (요건/전형기록/회고) ── */
+    .detail-toggle { margin-top: 10px; width: 100%; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px; font-size: 12px; color: #64748b; cursor: pointer; font-weight: 500; }
+    .detail-toggle:hover { background: #f1f5f9; }
+    .detail-area { display: none; margin-top: 10px; border-top: 1.5px dashed #e2e8f0; padding-top: 10px; }
+    .detail-area.open { display: block; }
+    .d-section { margin-bottom: 14px; }
+    .d-title { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; letter-spacing: 0.02em; }
+
+    .req-item { display: flex; align-items: center; gap: 7px; padding: 4px 0; font-size: 12.5px; }
+    .req-item input[type=checkbox] { width: 15px; height: 15px; accent-color: #3b82f6; cursor: pointer; flex-shrink: 0; }
+    .req-item .req-label { flex: 1; }
+    .req-item.done .req-label { color: #94a3b8; text-decoration: line-through; }
+    .req-del { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 13px; padding: 0 3px; }
+    .req-del:hover { color: #ef4444; }
+    .req-move { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 12px; padding: 0 3px; }
+    .req-move:hover { color: #3b82f6; }
+    .req-group { margin-bottom: 10px; }
+    .req-group-title { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+    .req-group-title.t-qual { color: #16a34a; }
+    .req-group-title.t-sub  { color: #d97706; }
+    .req-group.sub-group { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 7px 9px; }
+    .cat-toggle { display: flex; border: 1.5px solid #e2e8f0; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+    .cat-toggle button { border: none; background: white; color: #94a3b8; font-size: 11px; padding: 6px 9px; cursor: pointer; font-weight: 600; }
+    .cat-toggle button.on-qual { background: #f0fdf4; color: #16a34a; }
+    .cat-toggle button.on-sub  { background: #fffbeb; color: #d97706; }
+    .badge-sub { background: #fffbeb; color: #d97706; }
+    .req-add { display: flex; gap: 6px; margin-top: 4px; }
+    .req-add input { flex: 1; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 6px 9px; font-size: 12px; font-family: inherit; background: #f8fafc; color: #1e293b; }
+    .req-add input:focus { outline: none; border-color: #3b82f6; background: white; }
+    .mini-btn { background: #eff6ff; color: #3b82f6; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .mini-btn:hover { background: #dbeafe; }
+    .badge-req { background: #f0fdf4; color: #16a34a; }
+    .badge-req.incomplete { background: #fefce8; color: #ca8a04; }
+
+    .rec-item { background: #f8fafc; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; font-size: 12px; }
+    .rec-head { display: flex; justify-content: space-between; color: #64748b; font-weight: 600; margin-bottom: 3px; }
+    .rec-body { white-space: pre-wrap; line-height: 1.5; }
+    .rec-form { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .rec-row { display: flex; gap: 6px; }
+    .rec-row input[type=date] { border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 6px 8px; font-size: 12px; font-family: inherit; background: #f8fafc; color: #1e293b; width: 128px; }
+    .rec-row select { flex: 1; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 6px 8px; font-size: 12px; background: #f8fafc; color: #1e293b; }
+    .rec-form textarea { border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 9px; font-size: 12px; font-family: inherit; background: #f8fafc; color: #1e293b; resize: vertical; min-height: 46px; }
+    .rec-form input:focus, .rec-form select:focus, .rec-form textarea:focus { outline: none; border-color: #3b82f6; background: white; }
+
+    .retro-box { background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 8px; padding: 9px 10px; }
+    .retro-box .d-title { color: #dc2626; }
+    .retro-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .retro-row select { flex: 1; border: 1.5px solid #fecaca; border-radius: 8px; padding: 6px 8px; font-size: 12px; background: white; color: #1e293b; }
+    .retro-box textarea { width: 100%; border: 1.5px solid #fecaca; border-radius: 8px; padding: 7px 9px; font-size: 12px; font-family: inherit; background: white; color: #1e293b; resize: vertical; min-height: 40px; }
+    .retro-box select:focus, .retro-box textarea:focus { outline: none; border-color: #ef4444; }
+
+    /* 자동 추출 요건 */
+    .auto-req-box { background: #f0f9ff; border: 1.5px dashed #bae6fd; border-radius: 8px; padding: 9px 10px; margin-bottom: 8px; }
+    .auto-req-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .auto-req-title { font-size: 11px; font-weight: 700; color: #0284c7; }
+    .auto-req-item { display: flex; align-items: flex-start; gap: 6px; padding: 3px 0; font-size: 12px; color: #334155; line-height: 1.45; }
+    .auto-req-item .ar-dot { color: #7dd3fc; flex-shrink: 0; }
+    .auto-req-more { font-size: 11px; color: #0284c7; background: none; border: none; cursor: pointer; padding: 3px 0; font-weight: 600; }
+
+    /* 헤더 신규 공고 뱃지 */
+    .new-badge { background: #ef4444; color: white; font-size: 11px; font-weight: 700; border-radius: 10px; padding: 3px 9px; margin-left: 8px; display: none; }
+    .new-badge.show { display: inline-block; }
+
+    /* 재공고 뱃지 */
+    .badge-repost { background: #fdf4ff; color: #a855f7; }
+
     .empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
     .empty .icon { font-size: 36px; margin-bottom: 12px; }
     .empty p { font-size: 14px; }
@@ -119,7 +185,7 @@
 <div class="header">
   <div>
     <div class="header-sub">공고를 클릭해서 상태를 관리하세요</div>
-    <h1>채용공고 트래커</h1>
+    <h1>채용공고 트래커<span class="new-badge" id="new-badge"></span></h1>
   </div>
   <button class="add-btn" id="open-add">+ 공고 추가</button>
 </div>
@@ -215,7 +281,7 @@
 
   const DEMO_JOBS = [
     { id: "demo1", company: "무신사", title: "공간디자인실 VMD", location: "서울 성동구", experience: "경력 4~6년", deadline: _addDays(12), link: "#", keyword: "VMD", source: "wanted", status: "new", memo: "" },
-    { id: "demo2", company: "가치공간", title: "백화점 VMD 및 공간 디자이너", location: "서울 성동구", experience: "경력 3년↑", deadline: _addDays(2), link: "#", keyword: "공간디자인", source: "wanted", status: "interested", memo: "스케치업 요구, 포트폴리오 필수" },
+    { id: "demo2", company: "가치공간", title: "백화점 VMD 및 공간 디자이너", location: "서울 성동구", experience: "경력 3년↑", deadline: _addDays(2), link: "#", keyword: "공간디자인", source: "wanted", status: "interested", memo: "스케치업 요구, 포트폴리오 필수", repost_count: 2, repost_dates: [_addDays(-84), _addDays(-42)], crawled_at: new Date().toISOString(), raw_requirements: ["· 일러스트, 포토샵, 스케치업 능숙자", "- 백화점/브랜드 시즌 기획 경험", "▶ 경력 3년(대리급) 이상", "", "· 매장 연출 및 VP 소품 제작 가능자", "※ 포트폴리오 제출 필수", "· 일러스트, 포토샵, 스케치업 능숙자", "1. 원활한 커뮤니케이션 능력을 갖추고 협력사 및 유관부서와의 조율 업무를 능동적으로 수행할 수 있으며 주말 근무가 간헐적으로 발생할 수 있음을 인지하고 유연하게 대응 가능하신 분"] },
     { id: "demo3", company: "포토이즘(서북)", title: "VMD 채용", location: "서울 강남구", experience: "경력", deadline: "상시채용", link: "#", keyword: "VMD", source: "jobkorea", status: "applied", memo: "" },
     { id: "demo4", company: "유니클로", title: "VMD (계약직)", location: "서울 송파구", experience: "경력 3년↑", deadline: _addDays(-5), link: "#", keyword: "비주얼머천다이저", source: "jobkorea", status: "interested", memo: "" }
   ];
@@ -399,7 +465,136 @@
     return info.date.getTime();                                   // 임박순
   }
 
+  // ── 상세 영역 열림 상태 & 요건/전형기록/회고 로직 ──
+  const openDetails = new Set();
+  const REC_TYPES = ["서류", "과제", "1차면접", "2차면접", "최종면접", "기타"];
+  const FAIL_STAGES = ["서류", "과제", "1차면접", "2차면접", "최종면접", "기타"];
+
+  window.toggleDetail = (jobId) => {
+    openDetails.has(jobId) ? openDetails.delete(jobId) : openDetails.add(jobId);
+    render();
+  };
+
+  async function saveField(jobId, patch) {
+    const j = allJobs.find(x => x.id === jobId);
+    if (j) Object.assign(j, patch);
+    if (fb) await fb.updateDoc(fb.doc(fb.db, "jobs", jobId), patch);
+    render();
+  }
+
+  // 제출물 자동 분류 키워드
+  const SUBMIT_KEYWORDS = ["포트폴리오", "제출", "첨부", "이력서", "경력기술서", "자기소개서", "자소서", "지원서", "증빙", "서류"];
+  function guessCategory(text) {
+    return SUBMIT_KEYWORDS.some(k => text.includes(k)) ? "sub" : "qual";
+  }
+
+  const addCatState = {}; // jobId → "qual" | "sub" (추가 폼의 현재 선택)
+  window.setAddCat = (jobId, cat) => { addCatState[jobId] = cat; render(); };
+
+  window.addRequirement = (jobId) => {
+    const input = document.getElementById("req-new-" + jobId);
+    const text = input.value.trim();
+    if (!text) return;
+    const cat = addCatState[jobId] || guessCategory(text);
+    const j = allJobs.find(x => x.id === jobId);
+    const reqs = [...(j.requirements || []), { text, done: false, cat }];
+    saveField(jobId, { requirements: reqs });
+  };
+  window.toggleRequirement = (jobId, idx) => {
+    const j = allJobs.find(x => x.id === jobId);
+    const reqs = (j.requirements || []).map((r, i) => i === idx ? { ...r, done: !r.done } : r);
+    saveField(jobId, { requirements: reqs });
+  };
+  window.deleteRequirement = (jobId, idx) => {
+    const j = allJobs.find(x => x.id === jobId);
+    const reqs = (j.requirements || []).filter((_, i) => i !== idx);
+    saveField(jobId, { requirements: reqs });
+  };
+  window.moveRequirement = (jobId, idx) => {
+    const j = allJobs.find(x => x.id === jobId);
+    const reqs = (j.requirements || []).map((r, i) =>
+      i === idx ? { ...r, cat: (r.cat === "sub" ? "qual" : "sub") } : r);
+    saveField(jobId, { requirements: reqs });
+  };
+
+  window.addRecord = (jobId) => {
+    const date = document.getElementById("rec-date-" + jobId).value;
+    const type = document.getElementById("rec-type-" + jobId).value;
+    const note = document.getElementById("rec-note-" + jobId).value.trim();
+    if (!note && !date) { alert("날짜나 내용을 입력해주세요."); return; }
+    const j = allJobs.find(x => x.id === jobId);
+    const recs = [...(j.records || []), { date, type, note }];
+    saveField(jobId, { records: recs });
+  };
+  window.deleteRecord = (jobId, idx) => {
+    if (!confirm("이 기록을 삭제할까요?")) return;
+    const j = allJobs.find(x => x.id === jobId);
+    const recs = (j.records || []).filter((_, i) => i !== idx);
+    saveField(jobId, { records: recs });
+  };
+
+  const retroTimers = {};
+  window.saveRetro = (jobId, field, value) => {
+    const key = jobId + field;
+    clearTimeout(retroTimers[key]);
+    retroTimers[key] = setTimeout(() => {
+      const j = allJobs.find(x => x.id === jobId);
+      if (j) j[field] = value;
+      if (fb) fb.updateDoc(fb.doc(fb.db, "jobs", jobId), { [field]: value });
+    }, 600);
+  };
+
+  // ── 자동 추출 요건 정리(청소) & 불러오기 ──
+  function cleanRawReqs(raw) {
+    if (!Array.isArray(raw)) return [];
+    const seen = new Set();
+    const out = [];
+    for (let line of raw) {
+      line = String(line || "")
+        .replace(/^[\s·•\-\*▶►▪○●◦※☞>–—\d\.\)\(]+/, "")  // 앞쪽 글머리 기호/번호 제거
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!line || line.length < 2) continue;           // 빈 줄/기호만 있는 줄 제거
+      if (line.length > 80) line = line.slice(0, 78) + "…"; // 과도하게 긴 항목 축약
+      const key = line.toLowerCase();
+      if (seen.has(key)) continue;                       // 중복 제거
+      seen.add(key);
+      out.push(line);
+      if (out.length >= 15) break;                       // 최대 15개
+    }
+    return out;
+  }
+
+  const expandedAutoReq = new Set();
+  window.toggleAutoReqMore = (jobId) => {
+    expandedAutoReq.has(jobId) ? expandedAutoReq.delete(jobId) : expandedAutoReq.add(jobId);
+    render();
+  };
+
+  window.importAutoReqs = (jobId) => {
+    const j = allJobs.find(x => x.id === jobId);
+    const cleaned = cleanRawReqs(j.raw_requirements);
+    if (!cleaned.length) return;
+    const existing = new Set((j.requirements || []).map(r => r.text.toLowerCase()));
+    const added = cleaned.filter(t => !existing.has(t.toLowerCase())).map(text => ({ text, done: false, cat: guessCategory(text) }));
+    saveField(jobId, { requirements: [...(j.requirements || []), ...added] });
+  };
+
+  // ── 마지막 방문 이후 신규 공고 뱃지 ──
+  const LAST_VISIT_KEY = "jt_last_visit";
+  const lastVisit = localStorage.getItem(LAST_VISIT_KEY);
+  window.addEventListener("beforeunload", () => localStorage.setItem(LAST_VISIT_KEY, new Date().toISOString()));
+
+  function updateNewBadge() {
+    const badge = document.getElementById("new-badge");
+    if (!lastVisit) { badge.classList.remove("show"); return; }
+    const count = allJobs.filter(j => j.status === "new" && j.crawled_at && j.crawled_at > lastVisit).length;
+    if (count > 0) { badge.textContent = `+${count} NEW`; badge.classList.add("show"); }
+    else badge.classList.remove("show");
+  }
+
   function render() {
+    updateNewBadge();
     // 메모/다음액션 현재값 보존 (리렌더 시 사용자가 입력 중인 내용 유지)
     const liveMemos = {};
     document.querySelectorAll(".memo-input[data-job-id]").forEach(el => {
@@ -449,6 +644,133 @@
         naDue = nd <= t;
       }
 
+      const reqs = job.requirements || [];
+      const qualReqs = reqs.map((r, i) => ({ ...r, _i: i })).filter(r => (r.cat || "qual") !== "sub");
+      const subReqs  = reqs.map((r, i) => ({ ...r, _i: i })).filter(r => (r.cat || "qual") === "sub");
+      const qualDone = qualReqs.filter(r => r.done).length;
+      const subDone  = subReqs.filter(r => r.done).length;
+      const reqDone = qualDone + subDone;
+      const reqBadge = qualReqs.length
+        ? `<span class="badge badge-req${qualDone < qualReqs.length ? " incomplete" : ""}">요건 ${qualDone}/${qualReqs.length}</span>`
+        : "";
+      const subBadge = subReqs.length
+        ? `<span class="badge badge-sub${subDone < subReqs.length ? "" : ""}">📤 제출 ${subDone}/${subReqs.length}</span>`
+        : "";
+      const isOpen = openDetails.has(job.id);
+      const recs = job.records || [];
+
+      const rawCleaned = cleanRawReqs(job.raw_requirements);
+      const arExpanded = expandedAutoReq.has(job.id);
+      const arShown = arExpanded ? rawCleaned : rawCleaned.slice(0, 5);
+      const autoReqHtml = rawCleaned.length ? `
+        <div class="auto-req-box">
+          <div class="auto-req-head">
+            <span class="auto-req-title">🔍 공고에서 추출된 요건 ${rawCleaned.length}개</span>
+            <button class="mini-btn" onclick="importAutoReqs('${esc(job.id)}')">체크리스트로 불러오기</button>
+          </div>
+          ${arShown.map(t => `<div class="auto-req-item"><span class="ar-dot">▸</span><span>${esc(t)}</span></div>`).join("")}
+          ${rawCleaned.length > 5 ? `<button class="auto-req-more" onclick="toggleAutoReqMore('${esc(job.id)}')">${arExpanded ? "접기 ▲" : `${rawCleaned.length - 5}개 더 보기 ▼`}</button>` : ""}
+        </div>` : "";
+
+      let repostBadge = "";
+      if (job.repost_count && job.repost_count > 0) {
+        let extra = "";
+        const dates = (job.repost_dates || [])
+          .map(d => new Date(d)).filter(d => !isNaN(d)).sort((a, b) => a - b);
+        if (dates.length) {
+          const last = dates[dates.length - 1];
+          const lastStr = `${last.getMonth() + 1}/${last.getDate()}`;
+          // 간격: 과거 공고들 + 이번 공고(crawled_at)까지의 평균 간격
+          const points = [...dates];
+          const cur = new Date(job.crawled_at);
+          if (!isNaN(cur)) points.push(cur);
+          if (points.length >= 2) {
+            const gaps = [];
+            for (let i = 1; i < points.length; i++) gaps.push(points[i] - points[i - 1]);
+            const avgDays = Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length / (1000 * 60 * 60 * 24));
+            const gapStr = avgDays >= 14 ? `약 ${Math.round(avgDays / 7)}주` : `약 ${avgDays}일`;
+            extra = ` · 최근 ${lastStr} · 간격 ${gapStr}`;
+          } else {
+            extra = ` · 최근 ${lastStr}`;
+          }
+        }
+        repostBadge = `<span class="badge badge-repost">🔁 재공고 ${job.repost_count}회${extra}</span>`;
+      }
+
+      const reqItem = (r) => `
+        <div class="req-item${r.done ? " done" : ""}">
+          <input type="checkbox" ${r.done ? "checked" : ""} onchange="toggleRequirement('${esc(job.id)}', ${r._i})">
+          <span class="req-label">${esc(r.text)}</span>
+          <button class="req-move" title="다른 섹션으로 이동" onclick="moveRequirement('${esc(job.id)}', ${r._i})">⇄</button>
+          <button class="req-del" onclick="deleteRequirement('${esc(job.id)}', ${r._i})">✕</button>
+        </div>`;
+
+      const reqListHtml = `
+        ${qualReqs.length ? `<div class="req-group">
+          <div class="req-group-title t-qual">✅ 자격 요건</div>
+          ${qualReqs.map(reqItem).join("")}
+        </div>` : ""}
+        ${subReqs.length ? `<div class="req-group sub-group">
+          <div class="req-group-title t-sub">📤 제출물</div>
+          ${subReqs.map(reqItem).join("")}
+        </div>` : ""}`;
+      const hasAnyReq = qualReqs.length || subReqs.length;
+
+      const recListHtml = recs.map((r, i) => `
+        <div class="rec-item">
+          <div class="rec-head">
+            <span>${esc(r.date || "")} ${esc(r.type || "")}</span>
+            <button class="req-del" onclick="deleteRecord('${esc(job.id)}', ${i})">✕</button>
+          </div>
+          <div class="rec-body">${esc(r.note || "")}</div>
+        </div>`).join("");
+
+      const retroHtml = status === "final_fail" ? `
+        <div class="d-section retro-box">
+          <div class="d-title">탈락 회고</div>
+          <div class="retro-row">
+            <select onchange="saveRetro('${esc(job.id)}','fail_stage',this.value)">
+              <option value="">탈락 단계 선택</option>
+              ${FAIL_STAGES.map(s => `<option value="${s}"${job.fail_stage === s ? " selected" : ""}>${s}</option>`).join("")}
+            </select>
+          </div>
+          <textarea placeholder="짐작 원인, 배운 점..." oninput="saveRetro('${esc(job.id)}','fail_reason',this.value)">${esc(job.fail_reason || "")}</textarea>
+        </div>` : "";
+
+      const detailHtml = `
+        <button class="detail-toggle" onclick="toggleDetail('${esc(job.id)}')">${isOpen ? "▲ 상세 접기" : `▼ 상세 (요건 ${qualDone}/${qualReqs.length}${subReqs.length ? ` · 제출 ${subDone}/${subReqs.length}` : ""} · 기록 ${recs.length})`}</button>
+        <div class="detail-area${isOpen ? " open" : ""}">
+          ${retroHtml}
+          <div class="d-section">
+            <div class="d-title">📋 요건 체크리스트</div>
+            ${autoReqHtml}
+            ${hasAnyReq ? reqListHtml : `<div style="font-size:12px;color:#cbd5e1;padding:2px 0;">공고의 요구사항을 추가해보세요</div>`}
+            <div class="req-add">
+              <input type="text" id="req-new-${esc(job.id)}" placeholder="예: 스케치업 능숙 / 포트폴리오 제출"
+                onkeydown="if(event.key==='Enter')addRequirement('${esc(job.id)}')">
+              <div class="cat-toggle">
+                <button class="${(addCatState[job.id] || "qual") === "qual" ? "on-qual" : ""}" onclick="setAddCat('${esc(job.id)}','qual')">요건</button>
+                <button class="${addCatState[job.id] === "sub" ? "on-sub" : ""}" onclick="setAddCat('${esc(job.id)}','sub')">제출</button>
+              </div>
+              <button class="mini-btn" onclick="addRequirement('${esc(job.id)}')">추가</button>
+            </div>
+          </div>
+          <div class="d-section">
+            <div class="d-title">🗂 전형 기록</div>
+            ${recListHtml}
+            <div class="rec-form">
+              <div class="rec-row">
+                <input type="date" id="rec-date-${esc(job.id)}">
+                <select id="rec-type-${esc(job.id)}">
+                  ${REC_TYPES.map(t => `<option value="${t}">${t}</option>`).join("")}
+                </select>
+              </div>
+              <textarea id="rec-note-${esc(job.id)}" placeholder="받은 질문, 내 답변, 분위기, 준비할 것..."></textarea>
+              <button class="mini-btn" onclick="addRecord('${esc(job.id)}')">기록 추가</button>
+            </div>
+          </div>
+        </div>`;
+
       return `
         <div class="job-card ${esc(status)}${dinfo.type === "expired" ? " expired" : ""}">
           <div class="card-top">
@@ -456,6 +778,9 @@
             <div class="badges">
               <span class="badge badge-source">${esc(job.source === "manual" && job.source_note ? job.source_note : (SOURCE_LABEL[job.source] || job.source))}</span>
               ${job.keyword ? `<span class="badge badge-keyword">${esc(job.keyword)}</span>` : ""}
+              ${repostBadge}
+              ${reqBadge}
+              ${subBadge}
             </div>
           </div>
           <div class="job-title">${esc(job.title || "")}</div>
@@ -485,6 +810,7 @@
               value="${esc(naDate)}"
               onchange="document.dispatchEvent(new CustomEvent('na-input',{detail:{id:'${esc(job.id)}',field:'next_action_date',val:this.value}}))">
           </div>
+          ${detailHtml}
         </div>`;
     }).join("");
   }
