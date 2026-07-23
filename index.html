@@ -63,6 +63,37 @@
     .memo-input:focus { outline: none; border-color: #3b82f6; background: white; }
     .memo-input::placeholder { color: #cbd5e1; }
 
+    .add-btn { background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .add-btn:hover { background: #2563eb; }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 50; align-items: flex-end; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; width: 100%; max-width: 480px; border-radius: 16px 16px 0 0; padding: 20px; max-height: 88vh; overflow-y: auto; }
+    @media (min-width: 640px) {
+      .modal-overlay.open { align-items: center; }
+      .modal { border-radius: 16px; }
+    }
+    .modal h2 { font-size: 16px; margin-bottom: 14px; }
+    .m-field { margin-bottom: 11px; }
+    .m-field label { display: block; font-size: 11px; color: #64748b; margin-bottom: 4px; font-weight: 500; }
+    .m-field input, .m-field textarea { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 9px 10px; font-size: 13px; font-family: inherit; color: #1e293b; background: #f8fafc; }
+    .m-field input:focus, .m-field textarea:focus { outline: none; border-color: #3b82f6; background: white; }
+    .m-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .m-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .m-save { flex: 1; background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .m-save:disabled { background: #93c5fd; cursor: default; }
+    .m-cancel { background: white; color: #64748b; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 11px 16px; font-size: 13px; cursor: pointer; }
+
+    .demo-banner { display: none; background: #fef3c7; color: #92400e; font-size: 12px; padding: 8px 16px; text-align: center; }
+    .demo-banner.show { display: block; }
+
+    .dday { font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+    .dday-normal  { background: #eff6ff; color: #3b82f6; }
+    .dday-urgent  { background: #fee2e2; color: #dc2626; }
+    .dday-expired { background: #f1f5f9; color: #94a3b8; }
+    .job-card.expired { opacity: 0.5; }
+    .job-card.expired .job-title { text-decoration: line-through; text-decoration-color: #cbd5e1; }
+
     .empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
     .empty .icon { font-size: 36px; margin-bottom: 12px; }
     .empty p { font-size: 14px; }
@@ -80,6 +111,55 @@
   <div>
     <div class="header-sub">공고를 클릭해서 상태를 관리하세요</div>
     <h1>채용공고 트래커</h1>
+  </div>
+  <button class="add-btn" id="open-add">+ 공고 추가</button>
+</div>
+
+<div class="demo-banner" id="demo-banner">⚠️ 미리보기 모드 — Firebase에 연결되지 않아 샘플 데이터를 표시 중이에요. 저장은 되지 않아요.</div>
+
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h2>공고 직접 추가</h2>
+    <div class="m-field">
+      <label>회사명 *</label>
+      <input type="text" id="a-company" placeholder="예: 무신사">
+    </div>
+    <div class="m-field">
+      <label>포지션</label>
+      <input type="text" id="a-title" placeholder="예: 공간디자인실 VMD">
+    </div>
+    <div class="m-row">
+      <div class="m-field">
+        <label>근무지</label>
+        <input type="text" id="a-location" placeholder="예: 서울 성동구">
+      </div>
+      <div class="m-field">
+        <label>경력 요건</label>
+        <input type="text" id="a-experience" placeholder="예: 경력 3년↑">
+      </div>
+    </div>
+    <div class="m-row">
+      <div class="m-field">
+        <label>마감일</label>
+        <input type="date" id="a-deadline">
+      </div>
+      <div class="m-field">
+        <label>출처</label>
+        <input type="text" id="a-source" placeholder="예: 링크드인, 지인 추천">
+      </div>
+    </div>
+    <div class="m-field">
+      <label>공고 링크</label>
+      <input type="text" id="a-link" placeholder="https://...">
+    </div>
+    <div class="m-field">
+      <label>메모</label>
+      <textarea id="a-memo" rows="2" placeholder="요구 툴, 연봉, 특이사항 등"></textarea>
+    </div>
+    <div class="m-actions">
+      <button class="m-save" id="a-save">저장</button>
+      <button class="m-cancel" id="a-cancel">취소</button>
+    </div>
   </div>
 </div>
 
@@ -109,11 +189,6 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, doc, updateDoc, query, orderBy }
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  // ⚠️ 아래 6개 값을 본인의 Firebase 설정으로 교체하세요
   const firebaseConfig = {
     apiKey:            "AIzaSyB9YHXv0sgw5mZzpB0607Vo-dKa3cWlZaw",
     authDomain:        "job-tracker-1ceda.firebaseapp.com",
@@ -123,8 +198,18 @@
     appId:             "1:290821379158:web:949393595306beda0b97f7"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
+  let fb = null; // { db, doc, updateDoc, addDoc, collection } — null이면 데모 모드
+
+  const _t = new Date();
+  const _fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const _addDays = n => { const d = new Date(_t); d.setDate(d.getDate()+n); return _fmt(d); };
+
+  const DEMO_JOBS = [
+    { id: "demo1", company: "무신사", title: "공간디자인실 VMD", location: "서울 성동구", experience: "경력 4~6년", deadline: _addDays(12), link: "#", keyword: "VMD", source: "wanted", status: "new", memo: "" },
+    { id: "demo2", company: "가치공간", title: "백화점 VMD 및 공간 디자이너", location: "서울 성동구", experience: "경력 3년↑", deadline: _addDays(2), link: "#", keyword: "공간디자인", source: "wanted", status: "interested", memo: "스케치업 요구, 포트폴리오 필수" },
+    { id: "demo3", company: "포토이즘(서북)", title: "VMD 채용", location: "서울 강남구", experience: "경력", deadline: "상시채용", link: "#", keyword: "VMD", source: "jobkorea", status: "applied", memo: "" },
+    { id: "demo4", company: "유니클로", title: "VMD (계약직)", location: "서울 송파구", experience: "경력 3년↑", deadline: _addDays(-5), link: "#", keyword: "비주얼머천다이저", source: "jobkorea", status: "interested", memo: "" }
+  ];
 
   const STATUS_LABEL = {
     new:         "새 공고",
@@ -137,34 +222,103 @@
     final_fail:  "불합격",
   };
 
-  const SOURCE_LABEL = { wanted: "원티드", jobkorea: "잡코리아" };
+  const SOURCE_LABEL = { wanted: "원티드", jobkorea: "잡코리아", manual: "직접 추가" };
 
   let allJobs = [];
   let currentFilter = "all";
   const memoTimers = {};
 
-  // Firestore 실시간 연동
-  const q = query(collection(db, "jobs"), orderBy("crawled_at", "desc"));
-  onSnapshot(q, (snapshot) => {
-    allJobs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Firebase 연결 시도 → 실패하면 데모 모드
+  (async () => {
+    try {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+      const { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, query, orderBy } =
+        await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+
+      const app = initializeApp(firebaseConfig);
+      const db  = getFirestore(app);
+      fb = { db, doc, updateDoc, addDoc, collection };
+
+      const q = query(collection(db, "jobs"), orderBy("crawled_at", "desc"));
+      onSnapshot(q, (snapshot) => {
+        allJobs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        render();
+      }, (err) => {
+        enterDemoMode();
+      });
+    } catch (e) {
+      enterDemoMode();
+    }
+  })();
+
+  function enterDemoMode() {
+    fb = null;
+    document.getElementById("demo-banner").classList.add("show");
+    allJobs = [...DEMO_JOBS];
     render();
-  }, (err) => {
-    document.getElementById("jobs-container").innerHTML =
-      `<div class="empty"><div class="icon">⚠️</div><p>연결 오류: Firebase 설정을 확인해주세요.<br><small>${err.message}</small></p></div>`;
-  });
+  }
 
   // 상태 변경
   async function updateStatus(jobId, value) {
-    await updateDoc(doc(db, "jobs", jobId), { status: value });
+    const j = allJobs.find(x => x.id === jobId);
+    if (j) { j.status = value; render(); }
+    if (fb) await fb.updateDoc(fb.doc(fb.db, "jobs", jobId), { status: value });
   }
 
   // 메모 자동 저장 (타이핑 멈춘 후 0.8초)
   function scheduleMemoSave(jobId, value) {
     clearTimeout(memoTimers[jobId]);
     memoTimers[jobId] = setTimeout(() => {
-      updateDoc(doc(db, "jobs", jobId), { memo: value });
+      const j = allJobs.find(x => x.id === jobId);
+      if (j) j.memo = value;
+      if (fb) fb.updateDoc(fb.doc(fb.db, "jobs", jobId), { memo: value });
     }, 800);
   }
+
+  // ── 수동 공고 추가 ──
+  const addModal = document.getElementById("add-modal");
+  document.getElementById("open-add").addEventListener("click", () => addModal.classList.add("open"));
+  document.getElementById("a-cancel").addEventListener("click", () => addModal.classList.remove("open"));
+  addModal.addEventListener("click", (e) => { if (e.target === addModal) addModal.classList.remove("open"); });
+
+  document.getElementById("a-save").addEventListener("click", async () => {
+    const company = document.getElementById("a-company").value.trim();
+    if (!company) { alert("회사명을 입력해주세요."); return; }
+
+    const sourceText = document.getElementById("a-source").value.trim();
+    const newJob = {
+      company,
+      title:      document.getElementById("a-title").value.trim(),
+      location:   document.getElementById("a-location").value.trim(),
+      experience: document.getElementById("a-experience").value.trim(),
+      deadline:   document.getElementById("a-deadline").value || "상시채용",
+      link:       document.getElementById("a-link").value.trim(),
+      memo:       document.getElementById("a-memo").value.trim(),
+      keyword:    "",
+      source:     "manual",
+      source_note: sourceText,
+      status:     "interested",
+      crawled_at: new Date().toISOString()
+    };
+
+    const saveBtn = document.getElementById("a-save");
+    saveBtn.disabled = true;
+    try {
+      if (fb) {
+        await fb.addDoc(fb.collection(fb.db, "jobs"), newJob);
+      } else {
+        allJobs.unshift({ id: "local" + Date.now(), ...newJob });
+        render();
+      }
+      ["a-company","a-title","a-location","a-experience","a-deadline","a-source","a-link","a-memo"]
+        .forEach(id => document.getElementById(id).value = "");
+      addModal.classList.remove("open");
+    } catch (e) {
+      alert("저장 실패: " + e.message);
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
 
   // 필터 버튼
   document.getElementById("filters").addEventListener("click", (e) => {
@@ -175,6 +329,53 @@
     btn.classList.add("active");
     render();
   });
+
+  // ── 마감일 파싱 & D-day 계산 ──
+  // 지원 형식: "2026-08-10", "2026.08.10", "08.10", "8/10", "~08.10(월)" 등
+  function parseDeadline(raw) {
+    if (!raw || /상시|채용시|수시/.test(raw)) return null;
+    const s = String(raw).trim();
+    let m = s.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    m = s.match(/(\d{1,2})[.\-\/](\d{1,2})/);
+    if (m) {
+      const now = new Date();
+      let d = new Date(now.getFullYear(), +m[1] - 1, +m[2]);
+      // 연도 없는 날짜가 6개월 이상 과거면 내년으로 해석 (연말→연초 공고)
+      if (d < now && (now - d) > 1000*60*60*24*180) d = new Date(now.getFullYear() + 1, +m[1] - 1, +m[2]);
+      return d;
+    }
+    return null;
+  }
+
+  function ddayInfo(raw) {
+    const d = parseDeadline(raw);
+    if (!d) return { type: "none", days: null, date: null };
+    const today = new Date(); today.setHours(0,0,0,0);
+    d.setHours(0,0,0,0);
+    const days = Math.round((d - today) / (1000*60*60*24));
+    if (days < 0)  return { type: "expired", days, date: d };
+    if (days <= 3) return { type: "urgent",  days, date: d };
+    return { type: "normal", days, date: d };
+  }
+
+  function ddayBadge(raw) {
+    const info = ddayInfo(raw);
+    if (info.type === "none")    return `<span>⏰ ${esc(raw || "상시채용")}</span>`;
+    const dateStr = `${info.date.getMonth()+1}/${info.date.getDate()}`;
+    if (info.type === "expired") return `<span>⏰ ${dateStr} <span class="dday dday-expired">마감됨</span></span>`;
+    const label = info.days === 0 ? "D-DAY" : `D-${info.days}`;
+    const cls = info.type === "urgent" ? "dday-urgent" : "dday-normal";
+    return `<span>⏰ ${dateStr} <span class="dday ${cls}">${label}</span></span>`;
+  }
+
+  // 정렬 키: 마감 임박순 → 마감일 없음 → 마감 지남
+  function sortKey(job) {
+    const info = ddayInfo(job.deadline);
+    if (info.type === "expired") return 2e15 + (-info.days);      // 맨 아래
+    if (info.type === "none")    return 1e15;                     // 그 다음 아래
+    return info.date.getTime();                                   // 임박순
+  }
 
   function render() {
     // 메모 현재값 보존 (리렌더 시 사용자가 입력 중인 내용 유지)
@@ -192,9 +393,10 @@
     document.getElementById("s-pass").textContent      = allJobs.filter(j => j.status === "final_pass").length;
 
     // 필터링
-    const filtered = currentFilter === "all"
+    const filtered = (currentFilter === "all"
       ? allJobs.filter(j => j.status !== "ignored")
-      : allJobs.filter(j => j.status === currentFilter);
+      : allJobs.filter(j => j.status === currentFilter)
+    ).slice().sort((a, b) => sortKey(a) - sortKey(b));
 
     const container = document.getElementById("jobs-container");
 
@@ -205,7 +407,7 @@
 
     container.innerHTML = filtered.map(job => {
       const status   = job.status || "new";
-      const deadline = (job.deadline && job.deadline !== "상시채용") ? `⏰ ${esc(job.deadline)}` : "⏰ 상시채용";
+      const dinfo    = ddayInfo(job.deadline);
       const memoVal  = liveMemos[job.id] !== undefined ? liveMemos[job.id] : (job.memo || "");
 
       const options = Object.entries(STATUS_LABEL)
@@ -213,11 +415,11 @@
         .join("");
 
       return `
-        <div class="job-card ${esc(status)}">
+        <div class="job-card ${esc(status)}${dinfo.type === "expired" ? " expired" : ""}">
           <div class="card-top">
             <span class="company">${esc(job.company || "")}</span>
             <div class="badges">
-              <span class="badge badge-source">${esc(SOURCE_LABEL[job.source] || job.source)}</span>
+              <span class="badge badge-source">${esc(job.source === "manual" && job.source_note ? job.source_note : (SOURCE_LABEL[job.source] || job.source))}</span>
               ${job.keyword ? `<span class="badge badge-keyword">${esc(job.keyword)}</span>` : ""}
             </div>
           </div>
@@ -225,7 +427,7 @@
           <div class="details">
             ${job.location  ? `<span>📍 ${esc(job.location)}</span>`  : ""}
             ${job.experience? `<span>💼 ${esc(job.experience)}</span>`: ""}
-            <span>${deadline}</span>
+            ${ddayBadge(job.deadline)}
           </div>
           <div class="actions">
             <select class="status-select" data-job-id="${esc(job.id)}"
