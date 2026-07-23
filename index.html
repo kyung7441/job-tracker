@@ -66,7 +66,8 @@
     .add-btn { background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .add-btn:hover { background: #2563eb; }
 
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 50; align-items: flex-end; justify-content: center; }
+    .modal-overlay { position: fixed; inset: 0; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.5); z-index: 50; align-items: flex-end; justify-content: center; }
+    .modal-overlay:not(.open) { display: none !important; }
     .modal-overlay.open { display: flex; }
     .modal { background: white; width: 100%; max-width: 480px; border-radius: 16px 16px 0 0; padding: 20px; max-height: 88vh; overflow-y: auto; }
     @media (min-width: 640px) {
@@ -93,6 +94,14 @@
     .dday-expired { background: #f1f5f9; color: #94a3b8; }
     .job-card.expired { opacity: 0.5; }
     .job-card.expired .job-title { text-decoration: line-through; text-decoration-color: #cbd5e1; }
+
+    .na-wrap { margin-top: 8px; display: flex; gap: 6px; align-items: center; }
+    .na-icon { font-size: 13px; flex-shrink: 0; }
+    .na-text { flex: 1; min-width: 80px; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 9px; font-size: 12px; font-family: inherit; color: #1e293b; background: #f8fafc; }
+    .na-date { border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 6px 7px; font-size: 12px; font-family: inherit; color: #1e293b; background: #f8fafc; width: 122px; flex-shrink: 0; }
+    .na-text:focus, .na-date:focus { outline: none; border-color: #3b82f6; background: white; }
+    .na-text::placeholder { color: #cbd5e1; }
+    .na-wrap.due .na-text, .na-wrap.due .na-date { border-color: #fca5a5; background: #fef2f2; }
 
     .empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
     .empty .icon { font-size: 36px; margin-bottom: 12px; }
@@ -275,6 +284,19 @@
     }, 800);
   }
 
+  // 다음 액션 자동 저장
+  const naTimers = {};
+  function scheduleNaSave(jobId, field, value) {
+    const key = jobId + field;
+    clearTimeout(naTimers[key]);
+    naTimers[key] = setTimeout(() => {
+      const j = allJobs.find(x => x.id === jobId);
+      if (j) j[field] = value;
+      if (fb) fb.updateDoc(fb.doc(fb.db, "jobs", jobId), { [field]: value });
+      if (field === "next_action_date") render();
+    }, 600);
+  }
+
   // ── 수동 공고 추가 ──
   const addModal = document.getElementById("add-modal");
   document.getElementById("open-add").addEventListener("click", () => addModal.classList.add("open"));
@@ -378,10 +400,14 @@
   }
 
   function render() {
-    // 메모 현재값 보존 (리렌더 시 사용자가 입력 중인 내용 유지)
+    // 메모/다음액션 현재값 보존 (리렌더 시 사용자가 입력 중인 내용 유지)
     const liveMemos = {};
     document.querySelectorAll(".memo-input[data-job-id]").forEach(el => {
       liveMemos[el.dataset.jobId] = el.value;
+    });
+    const liveNa = {};
+    document.querySelectorAll(".na-text[data-job-id], .na-date[data-job-id]").forEach(el => {
+      liveNa[el.dataset.jobId + el.dataset.field] = el.value;
     });
 
     // 통계 업데이트
@@ -414,6 +440,15 @@
         .map(([v, l]) => `<option value="${v}"${status === v ? " selected" : ""}>${l}</option>`)
         .join("");
 
+      const naText = liveNa[job.id + "next_action"]      !== undefined ? liveNa[job.id + "next_action"]      : (job.next_action || "");
+      const naDate = liveNa[job.id + "next_action_date"] !== undefined ? liveNa[job.id + "next_action_date"] : (job.next_action_date || "");
+      let naDue = false;
+      if (naDate) {
+        const t = new Date(); t.setHours(0,0,0,0);
+        const nd = new Date(naDate); nd.setHours(0,0,0,0);
+        naDue = nd <= t;
+      }
+
       return `
         <div class="job-card ${esc(status)}${dinfo.type === "expired" ? " expired" : ""}">
           <div class="card-top">
@@ -441,12 +476,22 @@
               oninput="document.dispatchEvent(new CustomEvent('memo-input',{detail:{id:'${esc(job.id)}',val:this.value}}))"
             >${esc(memoVal)}</textarea>
           </div>
+          <div class="na-wrap${naDue ? " due" : ""}">
+            <span class="na-icon">📌</span>
+            <input type="text" class="na-text" data-job-id="${esc(job.id)}" data-field="next_action"
+              placeholder="다음 할 일 (예: 포트폴리오 제출)" value="${esc(naText)}"
+              oninput="document.dispatchEvent(new CustomEvent('na-input',{detail:{id:'${esc(job.id)}',field:'next_action',val:this.value}}))">
+            <input type="date" class="na-date" data-job-id="${esc(job.id)}" data-field="next_action_date"
+              value="${esc(naDate)}"
+              onchange="document.dispatchEvent(new CustomEvent('na-input',{detail:{id:'${esc(job.id)}',field:'next_action_date',val:this.value}}))">
+          </div>
         </div>`;
     }).join("");
   }
 
   document.addEventListener("status-change", e => updateStatus(e.detail.id, e.detail.val));
   document.addEventListener("memo-input",    e => scheduleMemoSave(e.detail.id, e.detail.val));
+  document.addEventListener("na-input",      e => scheduleNaSave(e.detail.id, e.detail.field, e.detail.val));
 
   function esc(s) {
     return String(s ?? "")
