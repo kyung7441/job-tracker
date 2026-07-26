@@ -27,6 +27,30 @@
     .crawl-status { font-size: 11px; color: #94a3b8; padding: 6px 16px 0; text-align: center; }
     .crawl-status b { color: #64748b; font-weight: 600; }
 
+    .search-wrap { padding: 10px 16px 0; }
+    .search-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 9px 12px; font-size: 13px; font-family: inherit; background: white; color: #1e293b; }
+    .search-input:focus { outline: none; border-color: #3b82f6; }
+    .search-input::placeholder { color: #cbd5e1; }
+
+    .dash-toggle { margin: 10px 16px 0; width: calc(100% - 32px); background: white; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 9px; font-size: 12.5px; color: #64748b; cursor: pointer; font-weight: 600; }
+    .dash { display: none; margin: 10px 16px 0; background: white; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px; }
+    .dash.open { display: block; }
+    .dash h3 { font-size: 12px; color: #64748b; margin: 0 0 10px; }
+    .funnel { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+    .f-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .f-label { width: 64px; color: #64748b; flex-shrink: 0; }
+    .f-bar-track { flex: 1; height: 18px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+    .f-bar { height: 100%; background: #3b82f6; border-radius: 4px; min-width: 2px; transition: width 0.3s; }
+    .f-num { width: 86px; text-align: right; color: #1e293b; font-weight: 600; flex-shrink: 0; }
+    .f-num small { color: #94a3b8; font-weight: 400; }
+    .week-chart { display: flex; align-items: flex-end; gap: 6px; height: 72px; padding-top: 4px; }
+    .w-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .w-bar { width: 100%; max-width: 34px; background: #93c5fd; border-radius: 4px 4px 0 0; min-height: 2px; }
+    .w-num { font-size: 10px; color: #3b82f6; font-weight: 700; }
+    .w-label { font-size: 9.5px; color: #94a3b8; }
+    .applied-date-row { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: #64748b; margin-top: 8px; }
+    .applied-date-row input { border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 5px 7px; font-size: 12px; font-family: inherit; background: #f8fafc; color: #1e293b; }
+
     .filters { padding: 10px 16px; display: flex; gap: 7px; overflow-x: auto; -webkit-overflow-scrolling: touch; position: sticky; top: 0; z-index: 40; background: #f1f5f9; box-shadow: 0 2px 6px rgba(15,23,42,0.06); }
     .filters::-webkit-scrollbar { display: none; }
     .filter-btn { border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; background: white; color: #64748b; flex-shrink: 0; transition: all 0.15s; }
@@ -199,6 +223,18 @@
 
 <div class="crawl-status" id="crawl-status"></div>
 
+<div class="search-wrap">
+  <input type="text" class="search-input" id="search-input" placeholder="🔎 회사명·포지션·메모 검색">
+</div>
+
+<button class="dash-toggle" id="dash-toggle">📊 통계 보기 ▼</button>
+<div class="dash" id="dash">
+  <h3>전형 단계별 전환</h3>
+  <div class="funnel" id="funnel"></div>
+  <h3>주간 지원 건수 (최근 6주)</h3>
+  <div class="week-chart" id="week-chart"></div>
+</div>
+
 <div class="modal-overlay" id="add-modal">
   <div class="modal">
     <h2>공고 직접 추가</h2>
@@ -363,11 +399,90 @@
     render();
   }
 
-  // 상태 변경
+  // 상태 변경 (지원함으로 바뀌는 순간 지원일 자동 기록)
   async function updateStatus(jobId, value) {
     const j = allJobs.find(x => x.id === jobId);
-    if (j) { j.status = value; render(); }
-    if (fb) await fb.updateDoc(fb.doc(fb.db, "jobs", jobId), { status: value });
+    const patch = { status: value };
+    if (value === "applied" && j && !j.applied_at) {
+      patch.applied_at = new Date().toISOString().slice(0, 10);
+    }
+    if (j) { Object.assign(j, patch); render(); }
+    if (fb) await fb.updateDoc(fb.doc(fb.db, "jobs", jobId), patch);
+  }
+
+  window.setAppliedDate = (jobId, value) => {
+    const j = allJobs.find(x => x.id === jobId);
+    if (j) j.applied_at = value;
+    if (fb) fb.updateDoc(fb.doc(fb.db, "jobs", jobId), { applied_at: value });
+  };
+
+  // ── 검색 ──
+  let searchTerm = "";
+  document.getElementById("search-input").addEventListener("input", (e) => {
+    searchTerm = e.target.value.trim().toLowerCase();
+    render();
+  });
+
+  // ── 통계 대시보드 ──
+  document.getElementById("dash-toggle").addEventListener("click", () => {
+    const d = document.getElementById("dash");
+    const open = d.classList.toggle("open");
+    document.getElementById("dash-toggle").textContent = open ? "📊 통계 접기 ▲" : "📊 통계 보기 ▼";
+    if (open) renderDash();
+  });
+
+  function renderDash() {
+    // 전환 퍼널: 지원함 이후 단계에 도달한 누적 수
+    const reached = { applied: 0, doc_pass: 0, interview: 0, final_pass: 0 };
+    const ORDER = ["applied", "doc_pass", "interview", "final_pass"];
+    allJobs.forEach(j => {
+      const s = j.status || "new";
+      let maxIdx = -1;
+      if (ORDER.includes(s)) maxIdx = ORDER.indexOf(s);
+      if (s === "final_fail") {
+        // 탈락 단계로 도달 위치 추정: 서류 탈락이면 지원까지, 면접 탈락이면 면접까지
+        const fs = j.fail_stage || "";
+        if (fs.includes("면접")) maxIdx = 2;
+        else if (fs === "과제" || fs === "서류") maxIdx = fs === "서류" ? 0 : 1;
+        else maxIdx = 0;
+      }
+      ORDER.forEach((k, i) => { if (i <= maxIdx) reached[k]++; });
+    });
+    const labels = { applied: "지원", doc_pass: "서류합격", interview: "면접", final_pass: "최종합격" };
+    const base = reached.applied || 1;
+    document.getElementById("funnel").innerHTML = ORDER.map((k, i) => {
+      const n = reached[k];
+      const pct = Math.round((n / base) * 100);
+      const prev = i === 0 ? null : reached[ORDER[i - 1]];
+      const conv = prev ? ` <small>(${prev ? Math.round((n / (prev || 1)) * 100) : 0}%)</small>` : "";
+      return `
+        <div class="f-row">
+          <span class="f-label">${labels[k]}</span>
+          <div class="f-bar-track"><div class="f-bar" style="width:${pct}%"></div></div>
+          <span class="f-num">${n}건${conv}</span>
+        </div>`;
+    }).join("");
+
+    // 주간 지원 건수 (최근 6주, applied_at 기준)
+    const now = new Date(); now.setHours(0,0,0,0);
+    const weeks = [];
+    for (let w = 5; w >= 0; w--) {
+      const start = new Date(now); start.setDate(start.getDate() - start.getDay() - w * 7); // 그 주 일요일
+      const end = new Date(start); end.setDate(end.getDate() + 7);
+      const count = allJobs.filter(j => {
+        if (!j.applied_at) return false;
+        const d = new Date(j.applied_at);
+        return d >= start && d < end;
+      }).length;
+      weeks.push({ label: `${start.getMonth()+1}/${start.getDate()}~`, count });
+    }
+    const maxW = Math.max(...weeks.map(w => w.count), 1);
+    document.getElementById("week-chart").innerHTML = weeks.map(w => `
+      <div class="w-col">
+        <span class="w-num">${w.count || ""}</span>
+        <div class="w-bar" style="height:${Math.round((w.count / maxW) * 52)}px"></div>
+        <span class="w-label">${w.label}</span>
+      </div>`).join("");
   }
 
   // 메모 자동 저장 (타이핑 멈춘 후 0.8초)
@@ -654,11 +769,19 @@
     document.getElementById("s-interview").textContent = allJobs.filter(j => j.status === "interview").length;
     document.getElementById("s-pass").textContent      = allJobs.filter(j => j.status === "final_pass").length;
 
-    // 필터링
-    const filtered = (currentFilter === "all"
+    // 필터링 + 검색
+    let filtered = (currentFilter === "all"
       ? allJobs.filter(j => j.status !== "ignored")
       : allJobs.filter(j => j.status === currentFilter)
-    ).slice().sort((a, b) => sortKey(a) - sortKey(b));
+    );
+    if (searchTerm) {
+      filtered = filtered.filter(j =>
+        [j.company, j.title, j.memo, j.location, j.next_action]
+          .some(v => (v || "").toLowerCase().includes(searchTerm)));
+    }
+    filtered = filtered.slice().sort((a, b) => sortKey(a) - sortKey(b));
+
+    if (document.getElementById("dash").classList.contains("open")) renderDash();
 
     const container = document.getElementById("jobs-container");
 
@@ -778,10 +901,19 @@
           <textarea placeholder="짐작 원인, 배운 점..." oninput="saveRetro('${esc(job.id)}','fail_reason',this.value)">${esc(job.fail_reason || "")}</textarea>
         </div>` : "";
 
+      const APPLIED_STATES = ["applied", "doc_pass", "interview", "final_pass", "final_fail"];
+      const appliedDateHtml = APPLIED_STATES.includes(status) ? `
+        <div class="applied-date-row">
+          <span>📅 지원일</span>
+          <input type="date" value="${esc(job.applied_at || "")}"
+            onchange="setAppliedDate('${esc(job.id)}', this.value)">
+        </div>` : "";
+
       const detailHtml = `
         <button class="detail-toggle" onclick="toggleDetail('${esc(job.id)}')">${isOpen ? "▲ 상세 접기" : `▼ 상세 (요건 ${qualDone}/${qualReqs.length}${subReqs.length ? ` · 제출 ${subDone}/${subReqs.length}` : ""} · 기록 ${recs.length})`}</button>
         <div class="detail-area${isOpen ? " open" : ""}">
           ${retroHtml}
+          ${appliedDateHtml}
           <div class="d-section">
             <div class="d-title">📋 요건 체크리스트</div>
             ${autoReqHtml}
