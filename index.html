@@ -24,10 +24,15 @@
     .c-green { color: #10b981; }
     .c-gray { color: #94a3b8; }
 
-    .filters { padding: 0 16px 12px; display: flex; gap: 7px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .crawl-status { font-size: 11px; color: #94a3b8; padding: 6px 16px 0; text-align: center; }
+    .crawl-status b { color: #64748b; font-weight: 600; }
+
+    .filters { padding: 10px 16px; display: flex; gap: 7px; overflow-x: auto; -webkit-overflow-scrolling: touch; position: sticky; top: 0; z-index: 40; background: #f1f5f9; box-shadow: 0 2px 6px rgba(15,23,42,0.06); }
     .filters::-webkit-scrollbar { display: none; }
     .filter-btn { border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; background: white; color: #64748b; flex-shrink: 0; transition: all 0.15s; }
     .filter-btn.active { background: #1e293b; color: white; border-color: #1e293b; }
+    .filter-btn .fcount { font-weight: 700; margin-left: 3px; }
+    .filter-btn:not(.active) .fcount { color: #3b82f6; }
 
     .jobs { padding: 0 16px 80px; display: flex; flex-direction: column; gap: 10px; max-width: 700px; margin: 0 auto; }
 
@@ -192,6 +197,8 @@
 
 <div class="demo-banner" id="demo-banner">⚠️ 미리보기 모드 — Firebase에 연결되지 않아 샘플 데이터를 표시 중이에요. 저장은 되지 않아요.</div>
 
+<div class="crawl-status" id="crawl-status"></div>
+
 <div class="modal-overlay" id="add-modal">
   <div class="modal">
     <h2>공고 직접 추가</h2>
@@ -314,6 +321,13 @@
       const db  = getFirestore(app);
       fb = { db, doc, updateDoc, addDoc, collection };
 
+      // 수집 상태 (크롤러가 meta/crawl_status 문서에 기록)
+      try {
+        const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const statusSnap = await getDoc(doc(db, "meta", "crawl_status"));
+        if (statusSnap.exists()) renderCrawlStatus(statusSnap.data());
+      } catch (e) { /* 상태 문서 없으면 표시 생략 */ }
+
       const q = query(collection(db, "jobs"), orderBy("crawled_at", "desc"));
       onSnapshot(q, (snapshot) => {
         allJobs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -326,10 +340,26 @@
     }
   })();
 
+  function renderCrawlStatus(s) {
+    const el = document.getElementById("crawl-status");
+    if (!s) { el.textContent = ""; return; }
+    const parts = [];
+    if (s.counts) for (const [site, n] of Object.entries(s.counts)) {
+      parts.push(`<b>${SOURCE_LABEL[site] || site}</b> ${n}건`);
+    }
+    let when = "";
+    if (s.last_run) {
+      const d = new Date(s.last_run);
+      if (!isNaN(d)) when = ` · 마지막 수집 ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+    }
+    el.innerHTML = parts.join(" · ") + when;
+  }
+
   function enterDemoMode() {
     fb = null;
     document.getElementById("demo-banner").classList.add("show");
     allJobs = [...DEMO_JOBS];
+    renderCrawlStatus({ counts: { wanted: 12, jobkorea: 8 }, last_run: new Date().toISOString() });
     render();
   }
 
@@ -595,6 +625,17 @@
 
   function render() {
     updateNewBadge();
+
+    // 필터 버튼에 개수 표시
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      const f = btn.dataset.filter;
+      const n = f === "all"
+        ? allJobs.filter(j => j.status !== "ignored").length
+        : allJobs.filter(j => (j.status || "new") === f).length;
+      const base = btn.dataset.label || btn.textContent.replace(/\s*\d+$/, "").trim();
+      btn.dataset.label = base;
+      btn.innerHTML = `${base}<span class="fcount">${n}</span>`;
+    });
     // 메모/다음액션 현재값 보존 (리렌더 시 사용자가 입력 중인 내용 유지)
     const liveMemos = {};
     document.querySelectorAll(".memo-input[data-job-id]").forEach(el => {
